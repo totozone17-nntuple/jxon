@@ -113,7 +113,7 @@
       return vValue === null ? new EmptyTree() : vValue instanceof Object ? vValue : new vValue.constructor(vValue);
     }
 
-    function createObjTree(oParentNode, nVerb, bFreeze, bNesteAttr) {
+    function createObjTree(oParentNode, nVerb, bFreeze, bNesteAttr, bSkipTrimText) {
       var CDATA = 4,
         TEXT = 3,
         ELEMENT = 1,
@@ -135,7 +135,7 @@
             sCollectedTxt += oNode.nodeValue;
           } /* nodeType is "CDATASection" (4) */
           else if (oNode.nodeType === TEXT) {
-            sCollectedTxt += oNode.nodeValue.trim();
+            sCollectedTxt += bSkipTrimText ? oNode.nodeValue : oNode.nodeValue.trim();
           } /* nodeType is "Text" (3) */
           else if (oNode.nodeType === ELEMENT && !(opts.ignorePrefixedNodes && oNode.prefix)) {
             aCache.push(oNode);
@@ -158,7 +158,7 @@
           sProp = sProp.toLowerCase();
         }
 
-        vContent = createObjTree(aCache[nElId], nVerb, bFreeze, bNesteAttr);
+        vContent = createObjTree(aCache[nElId], nVerb, bFreeze, bNesteAttr, bSkipTrimText);
         if (vResult.hasOwnProperty(sProp)) {
           if (vResult[sProp].constructor !== Array) {
             vResult[sProp] = [vResult[sProp]];
@@ -288,9 +288,9 @@
         }
       }
     }
-    this.xmlToJs = this.build = function(oXMLParent, nVerbosity /* optional */ , bFreeze /* optional */ , bNesteAttributes /* optional */ ) {
+    this.xmlToJs = this.build = function(oXMLParent, nVerbosity /* optional */ , bFreeze /* optional */ , bNesteAttributes /* optional */ , bSkipTrimText /* optional */ ) {
       var _nVerb = arguments.length > 1 && typeof nVerbosity === 'number' ? nVerbosity & 3 : /* put here the default verbosity level: */ 1;
-      return createObjTree(oXMLParent, _nVerb, bFreeze || false, arguments.length > 3 ? bNesteAttributes : _nVerb === 3);
+      return createObjTree(oXMLParent, _nVerb, bFreeze || false, arguments.length > 3 ? bNesteAttributes : _nVerb === 3, bSkipTrimText || false);
     };
 
     this.jsToXml = this.unbuild = function(oObjTree, sNamespaceURI /* optional */ , sQualifiedName /* optional */ , oDocumentType /* optional */ ) {
